@@ -46,7 +46,7 @@ then
     contname=$(head -1 /home/student/tracker"$ipaddress".txt | cut -d' ' -f2)
     endsecs=$(head -1 /home/student/tracker"$ipaddress".txt | cut -d' ' -f1)
 
-    # AAA
+    # represents the current time
     secsafterepoch=$(date +%s)
 
     # case that it is time to recycle the container on the ip address
@@ -59,7 +59,7 @@ then
     # runs container.sh script to stop the running container on this ip address
     /home/student/container.sh "$contname" "$extip" "$netmask"
 
-    # AAA
+    # runs the data collection script as the container is being recycled
     /home/student/datacol.sh "$contname"
 
     # case that it is not yet time to recyle the container on the ip address
@@ -82,22 +82,34 @@ randnum=$(openssl rand -hex 1) ; dec=$(printf "%d" "0x$num") ; dec=$(($dec - 2))
 # if the random number is 1, then honeypot type 1 will run. This is the honeypot with 0% of its files being compressed
 if [ "$randnum" -eq 1 ]
 then
-
-    /home/student/container.sh compcontainer "$1" "$2"
-    contname="compcontainer"
-    sudo lxc-attach -n "$contname" -- bash -c "gzip /honey/honeyfile1.txt && gzip /honey/honeyfile2.txt && gzip /honey/honeyfile3.txt"
+    # runs the container.sh script passing in container name, ip address, and netmask
+    /home/student/container.sh cont0percent "$ipaddress" "$netmask"
+    contname="cont0percent"
 
 # if the random number is 2, then honeypot type 2 will run. This is the honeypot with 50% of its files being compressed
 elif [ "$randnum" -eq 2]
 then
-    #FIX FOR 50%
-    /home/student/container.sh uncompcontainer "$1" "$2"
-    contname="uncompcontainer"
+    # runs the container.sh script passing in container name, ip address, and netmask
+    /home/student/container.sh cont50percent "$ipaddress" "$netmask"
+    contname="cont50percent"
+
+    # goes through half of the "honey" files in the container, compressing them
+    for i in {1..25};
+    do
+        sudo lxc-attach -n "$contname" -- gzip /conifdential/file"$i".txt
+    done
 
 # if the random number is 3, then honeypot type 3 will run. This is the honeypot with 100% of its files being compressed
 else
-    /home/student/container.sh uncompcontainer "$1" "$2"
-    contname="uncompcontainer"
+    # runs the container.sh script passing in container name, ip address, and netmask
+    /home/student/container.sh cont100percent "$ipaddress" "$netmask"
+    contname="cont100percent"
+
+    # goes through all of the "honey" files in the container, compressing them
+    for i in {1..50};
+    do
+        sudo lxc-attach -n "$contname" -- gzip /confidential/file"$i".txt
+    done
 fi
 
 # current time (using seconds after epoch)
@@ -109,5 +121,5 @@ max_cont_time_in_secs=$(("$container_run_time"*60))
 # the end time of the container (using seconds after epoch)
 container_end_time=$(("$current_time" + "$max_cont_time_in_secs"))
 
-# 
-echo "$container_end_time" "$contname" "$1" "$2" >> /home/student/tracker"$ipaddress".txt
+# adding information about the container's end time, name, and respective ip address and netmask to the ip address's tracker file
+echo "$container_end_time" "$contname" "$ipaddress" "$netmask" >> /home/student/tracker"$ipaddress".txt
