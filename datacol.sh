@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if [ $# -ne 1 ]
 then
     echo "Usage: datacol.sh <container name>"
@@ -22,4 +21,5 @@ then
 fi
 
 numcommands=$(grep -c 'line from reader' /home/student/mitm_logs/"$1".log"$fileend")
+
 echo "$numcommands" >> /home/student/mitm_logs/"$1"counter

@@ -46,6 +46,49 @@ then
     contname=$(head -1 /home/student/tracker"$ipaddress".txt | cut -d' ' -f2)
     endsecs=$(head -1 /home/student/tracker"$ipaddress".txt | cut -d' ' -f1)
 
+    # represent what is currently the most recent log number
+    fileend=1
+
+    # used in while loop to find last log number
+    increment=2
+
+    # loops through log files for the specific container, to find the last one whose number is assigned to fileend
+    while [ -f /home/student/mitm_logs/"$contname".log"$increment" ]
+    do
+        fileend=$(( fileend + 1 ))
+        increment=$(( increment + 1 ))
+    done
+
+    # checks to see if attacker has not ssh'd into the honeypot yet
+    if cat /home/student/mitm_logs/"$contname".log"$fileend" | grep -qv 'Attacker connected '
+    then
+
+        # maximum amount of time container can run in seconds (30 mins = 1800 secs)
+        max_cont_time_in_secs=$(("$container_run_time"*60))
+
+        # the end time of the container (using seconds after epoch)
+        container_end_time=$(("$current_time" + "$max_cont_time_in_secs"))
+
+        # these two lines reset the timer for the container, if there is no attacker activity
+        rm /home/student/tracker"$ipaddress".txt
+        echo "$container_end_time" "$contname" "$ipaddress" "$netmask" >> /home/student/tracker"$ipaddress".txt
+        
+        # exiting from the script in the case that the container is running but it's not yet time to recycle yet
+        exit 0
+    fi
+
+    # timestamp of attacker entry
+    timestamp_of_attacker_entry=$(grep 'Attacker connected' /home/student/mitm_logs/"$1".log"$fileend" | cut -d' ' -f1-2)
+
+    # time of attacker entry, in the form of seconds after epoch
+    attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp" +%s)
+
+    # maximum amount of time container can run in seconds (30 mins = 1800 secs)
+    max_cont_time_in_secs=$(("$container_run_time"*60))
+
+    # updating the end time of the container (using seconds after epoch)
+    endsecs=$(("$attacker_entry_in_seconds_after_epoch" + "$max_cont_time_in_secs"))
+
     # represents the current time
     secsafterepoch=$(date +%s)
 
