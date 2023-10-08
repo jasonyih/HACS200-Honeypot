@@ -11,6 +11,7 @@
 # (1) the maximum amount of time before a honeypot is recycled is 30 minutes from when an
 #     attacker first ssh's into the honeypot.
 # (2) the amount of idle time before a honeypot is recycled is 5 minutes.
+# (3) if an attacker logs in and then logs out of a honeypot, it will be recycled.
 
 # checking to see if the number of arguments passed in (3) is correct
 if [ $# -ne 2 ]
@@ -114,6 +115,8 @@ then
 
     # runs the data collection script as the container is being recycled
     /home/student/datacol.sh "$contname"
+
+    exit 0
 
     # case that it is not yet time to recyle the container on the ip address
     else
