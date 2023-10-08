@@ -67,6 +67,9 @@ then
         # maximum amount of time container can run in seconds (30 mins = 1800 secs)
         max_cont_time_in_secs=$(("$container_run_time"*60))
 
+        # current time (using seconds after epoch)
+        current_time=$(date +%s)
+
         # the end time of the container (using seconds after epoch)
         container_end_time=$(("$current_time" + "$max_cont_time_in_secs"))
 
@@ -148,7 +151,7 @@ then
     # goes through half of the "honey" files in the container, compressing them
     for i in {1..25};
     do
-        sudo lxc-attach -n "$contname" -- gzip /conifdential/file"$i".txt
+        sudo lxc-attach -n "$contname" -- gzip /confidential/file"$i".txt
     done
 
 # if the random number is 3, then honeypot type 3 will run. This is the honeypot with 100% of its files being compressed

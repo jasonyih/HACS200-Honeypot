@@ -46,7 +46,7 @@ else
     # creates 50 honey files within the confidential directory
     for i in {1..50};
     do
-        sudo lxc-attach -n "$contname" -- touch /conifdential/file"$i".txt
+        sudo lxc-attach -n "$contname" -- touch /confidential/file"$i".txt
     done
 
     # counter variable used to increment from 1 through 100 inclusive
