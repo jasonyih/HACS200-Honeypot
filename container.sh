@@ -38,7 +38,7 @@ else
     sudo iptables --table nat --insert PREROUTING --source 0.0.0.0/0 --destination "$2" --jump DNAT --to-destination "$ip"
     sudo iptables --table nat --insert POSTROUTING --source "$ip" --destination 0.0.0.0/0 --jump SNAT --to-source "$2"
     sudo iptables --table nat --insert PREROUTING --source 0.0.0.0/0 --destination "$2" --protocol tcp --dport 22 --jump DNAT --to-destination 127.0.0.1:3355
-    sudo lxc-attach -n "$1" -- bash -c "sudo apt-get update && sudo apt-get install openssh-server"
+    sudo lxc-attach -n "$1" -- bash -c "sudo apt-get update && sudo apt-get install -y openssh-server"
 
     # this line create a honey directory named "confidential" on the container
     sudo lxc-attach -n "$1" -- bash -c "mkdir /confidential"
