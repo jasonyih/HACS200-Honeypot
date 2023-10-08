@@ -63,7 +63,7 @@ else
         for i in {1..50};
         do
           randvalue=$(echo $RANDOM | md5sum | head -c 20; echo;)
-          sudo lxc-attach -n "$1" -- echo "$username" "$randvalue" | sudo tee /confidential/file"$i".txt
+          sudo lxc-attach -n "$1" -- bash -c "echo '$username' '$randvalue' | sudo tee /confidential/file'$i'.txt"
         done
 
         # counter is incremented
