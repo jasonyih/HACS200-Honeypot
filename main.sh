@@ -22,6 +22,7 @@ fi
 # initializing these three variables from the arguments passed into the script
 ipaddress=$1
 netmask=$2
+container_run_time=30
 
 # creates an mitm_logs directory if it doesn't exist yet
 if [ ! -d /home/student/mitm_logs ]
@@ -30,12 +31,12 @@ then
 fi
 
 # creates an mitm logs directory specifically for the specific ip address, if it doesn't exist yet
-if [ ! -d /home/student/mitm_logs/logs_for_"$ipaddress"]
+if [ ! -d /home/student/mitm_logs/logs_for_"$ipaddress" ]
 then
     mkdir /home/student/mitm_logs/logs_for_"$ipaddress"
 fi
 
-# considers the case that the tracker document for this ip address already exists, 
+# considers the case that the tracker document for this ip address already exists,
 # meaning that a container is presently running on the ip address
 if [ -f /home/student/tracker"$ipaddress".txt ]
 then
@@ -60,7 +61,7 @@ then
     done
 
     # checks to see if attacker has not ssh'd into the honeypot yet
-    if cat /home/student/mitm_logs/"$contname".log"$fileend" | grep -qv 'Attacker connected'
+    if grep -qv 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
     then
 
         # maximum amount of time container can run in seconds (30 mins = 1800 secs)
@@ -72,7 +73,6 @@ then
         # these two lines reset the timer for the container, if there is no attacker activity
         rm /home/student/tracker"$ipaddress".txt
         echo "$container_end_time" "$contname" "$ipaddress" "$netmask" >> /home/student/tracker"$ipaddress".txt
-        
         # exiting from the script in the case that the container is running but it's not yet time to recycle yet
         exit 0
     fi
@@ -81,7 +81,7 @@ then
     timestamp_of_attacker_entry=$(grep 'Attacker connected' /home/student/mitm_logs/"$1".log"$fileend" | cut -d' ' -f1-2)
 
     # time of attacker entry, in the form of seconds after epoch
-    attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp" +%s)
+    attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
 
     # maximum amount of time container can run in seconds (30 mins = 1800 secs)
     max_cont_time_in_secs=$(("$container_run_time"*60))
@@ -100,7 +100,7 @@ then
 
     # case that it is time to recycle the container on the ip address, from either looking at 30 mins from when the attacker first
     # ssh's in or from when the attacker has been idle for more than five minutes
-    if [ "$endsecs" -le "$secsafterepoch" ] || [$(("$secsafterepoch" - "$last_attacker_activity")) -gt 300 ]
+    if [ "$endsecs" -le "$secsafterepoch" ] || [ $(("$secsafterepoch" - "$last_attacker_activity")) -gt 300 ]
     then
 
     # removes the tracker document for the ip address
@@ -113,7 +113,6 @@ then
     /home/student/datacol.sh "$contname"
 
     # case that it is not yet time to recyle the container on the ip address
-    
     else
 
     # informs user that container is not yet ready to be recycled
@@ -128,7 +127,9 @@ fi
 # everything below is intended to run if there is no container running on the ip address (so there is no tracker document for it)
 
 # generates a random number between 1-3 (inclusive) to decide on which honeypot configuration will be next to run on this ip address
-randnum=$(openssl rand -hex 1) ; dec=$(printf "%d" "0x$num") ; dec=$(($dec - 2)) ; mod=$(($dec % 3 + 1))
+num=$(openssl rand -hex 1)
+dec=$(printf "%d" "0x$num")
+randnum=$((dec % 3 + 1))
 
 # if the random number is 1, then honeypot type 1 will run. This is the honeypot with 0% of its files being compressed
 if [ "$randnum" -eq 1 ]
@@ -138,7 +139,7 @@ then
     contname="cont0percent"
 
 # if the random number is 2, then honeypot type 2 will run. This is the honeypot with 50% of its files being compressed
-elif [ "$randnum" -eq 2]
+elif [ "$randnum" -eq 2 ]
 then
     # runs the container.sh script passing in container name, ip address, and netmask
     /home/student/container.sh cont50percent "$ipaddress" "$netmask"

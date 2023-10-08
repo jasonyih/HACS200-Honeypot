@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script is used to set up or recycle the basic container with the honey files to be then compressed 
+# This script is used to set up or recycle the basic container with the honey files to be then compressed
 # to varying degrees later by the main script. This script is called by the main script when it is time
 # to either set up a container on the specified ip address or destroy it.
 
@@ -10,6 +10,8 @@ then
         echo "Usage: container.sh <container name> <external IP address> <external netmask prefix>"
         exit 1
 fi
+
+contname=$1
 
 # checks to see if the container already exists. If so, it is stopped and destroyed. If not, it is created and run
 if sudo lxc-ls | grep -q "$1 "
@@ -40,7 +42,7 @@ else
 
     # this line create a honey directory named "confidential" on the container
     sudo lxc-attach -n "$1" -- bash -c "mkdir /confidential"
-    
+
     # creates 50 honey files within the confidential directory
     for i in {1..50};
     do
@@ -53,10 +55,6 @@ else
     # this loop adds 100 lines to each honey file, containing the fake username and fake password
     while [ "$counter" -le 100 ]
     do
-        # md5sum algorithm is used to generate our passwords
-        randvalue1=$(echo $RANDOM | md5sum | head -c 20; echo;)
-        randvalue2=$(echo $RANDOM | md5sum | head -c 20; echo;)
-        randvalue3=$(echo $RANDOM | md5sum | head -c 20; echo;)
 
         # fake username is created
         username="user""$counter"
@@ -64,7 +62,8 @@ else
         # loops through all of the honey files, adding in the fake username and passwords to each
         for i in {1..50};
         do
-            sudo lxc-attach -n "$1" -- echo $username $randvalue1 >> /confidential/file"$i".txt
+          randvalue=$(echo $RANDOM | md5sum | head -c 20; echo;)
+          sudo lxc-attach -n "$1" -- echo "$username" "$randvalue" | sudo tee /confidential/file"$i".txt
         done
 
         # counter is incremented
