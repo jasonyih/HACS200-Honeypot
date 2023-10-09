@@ -62,8 +62,11 @@ then
     done
 
     # checks to see if attacker has not ssh'd into the honeypot yet
-    if grep -qv 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
+    if grep -q 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
     then
+        # this block does nothing if the attacker has already ssh'd into the container
+        :
+    else
 
         # maximum amount of time container can run in seconds (30 mins = 1800 secs)
         max_cont_time_in_secs=$(("$container_run_time"*60))
@@ -76,19 +79,23 @@ then
 
         # these two lines reset the timer for the container, if there is no attacker activity
         rm /home/student/tracker"$ipaddress".txt
+
         echo "$container_end_time" "$contname" "$ipaddress" "$netmask" >> /home/student/tracker"$ipaddress".txt
-        # exiting from the script in the case that the container is running but it's not yet time to recycle yet
+
+        # exiting from the script in the case that the container is running but it's not yet time to recycle yet because an attacker
+        # hasn't ssh'd into it
         exit 0
+
     fi
 
     # timestamp of attacker entry
-    timestamp_of_attacker_entry=$(grep 'Attacker connected' /home/student/mitm_logs/"$1".log"$fileend" | cut -d' ' -f1-2)
+    timestamp_of_attacker_entry=$(grep 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 
     # time of attacker entry, in the form of seconds after epoch
     attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
 
     # maximum amount of time container can run in seconds (30 mins = 1800 secs)
-    max_cont_time_in_secs=$(("$container_run_time"*60))
+    max_cont_time_in_secs=1800;
 
     # updating the end time of the container (using seconds after epoch)
     endsecs=$(("$attacker_entry_in_seconds_after_epoch" + "$max_cont_time_in_secs"))
@@ -102,9 +109,11 @@ then
     # this is the timestamp of the last attacker command in the form of seconds after epoch
     last_attacker_activity=$(date -d "$last_line_timestamp" +%s)
 
+    idle_time=$(("$secsafterepoch" - "$last_attacker_activity"))
+
     # case that it is time to recycle the container on the ip address, from either looking at 30 mins from when the attacker first
     # ssh's in or from when the attacker has been idle for more than five minutes
-    if [ "$endsecs" -le "$secsafterepoch" ] || [ $(("$secsafterepoch" - "$last_attacker_activity")) -gt 300 ]
+    if [ "$endsecs" -le "$secsafterepoch" ]
     then
 
     # removes the tracker document for the ip address
@@ -118,11 +127,19 @@ then
 
     exit 0
 
-    # case that it is not yet time to recyle the container on the ip address
-    else
+    elif [ "$idle_time" -ge 300 ]
+    then
 
-    # informs user that container is not yet ready to be recycled
-    echo "container is not ready to be recycled!"
+    # removes the tracker document for the ip address
+    rm /home/student/tracker"$ipaddress".txt
+
+    # runs container.sh script to stop the running container on this ip address
+    /home/student/container.sh "$contname" "$extip" "$netmask"
+
+    # runs the data collection script as the container is being recycled
+    /home/student/datacol.sh "$contname"
+
+    exit 0
 
     fi
 

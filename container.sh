@@ -53,6 +53,9 @@ else
     counter=1
 
     # this loop adds 100 lines to each honey file, containing the fake username and fake password
+
+    # UNCOMMENT BELOW!!!
+
     while [ "$counter" -le 100 ]
     do
 
