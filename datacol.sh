@@ -27,7 +27,7 @@ done
 if [ ! -f /home/student/mitm_logs/"$1"counter ]
 then
     touch /home/student/mitm_logs/"$1"counter
-    echo "num_commands - time_attacking - average_length" >> /home/student/mitm_logs/"$1"counter
+    echo "num_commands-time_attacking-average_length" >> /home/student/mitm_logs/"$1"counter
 fi
 
 # numcommands holds the number of commands that were executed in a particular session
@@ -51,4 +51,4 @@ while IFS= read -r line; do
 done < "$file"
 average_length_of_commands=$(bc -l <<< "$total/$num_lines")
 # Information is added to the end of the respective counter file
-echo "$numcommands - $time_spent_attacking - $average_length_of_commands" >> /home/student/mitm_logs/"$1"counter
+echo "$numcommands-$time_spent_attacking-$average_length_of_commands" >> /home/student/mitm_logs/"$1"counter
