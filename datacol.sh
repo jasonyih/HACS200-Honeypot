@@ -30,7 +30,6 @@ then
     echo "num_commands - time_attacking - average_length" >> /home/student/mitm_logs/"$1"counter
 fi
 
-fileend=$(($fileend- 1))
 # numcommands holds the number of commands that were executed in a particular session
 numcommands=$(grep -c 'line from reader' /home/student/mitm_logs/"$1".log"$fileend")
 timestamp_of_attacker_entry=$(grep -m 1 'Opened shell' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
