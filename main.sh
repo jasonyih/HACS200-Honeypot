@@ -65,7 +65,21 @@ then
     if grep -q 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
     then
         # this block does nothing if the attacker has already ssh'd into the container
-        :
+        if grep -q 'Attacker closed connection' /home/student/mitm_logs/"$contname".log"$fileend"
+        then
+
+            # removes the tracker document for the ip address
+            rm /home/student/tracker"$ipaddress".txt
+
+            # runs container.sh script to stop the running container on this ip address
+            /home/student/container.sh "$contname" "$extip" "$netmask"
+
+            # runs the data collection script as the container is being recycled
+            /home/student/datacol.sh "$contname"
+
+            exit 0
+
+        fi
     else
 
         # maximum amount of time container can run in seconds (30 mins = 1800 secs)
@@ -89,7 +103,7 @@ then
     fi
 
     # timestamp of attacker entry
-    timestamp_of_attacker_entry=$(grep 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
+    timestamp_of_attacker_entry=$(grep -m 1 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 
     # time of attacker entry, in the form of seconds after epoch
     attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
@@ -153,37 +167,41 @@ fi
 num=$(openssl rand -hex 1)
 dec=$(printf "%d" "0x$num")
 randnum=$((dec % 3 + 1))
+cont="NONE_SELECTED_YET"
 
 # if the random number is 1, then honeypot type 1 will run. This is the honeypot with 0% of its files being compressed
 if [ "$randnum" -eq 1 ]
 then
     # runs the container.sh script passing in container name, ip address, and netmask
-    /home/student/container.sh cont0percent "$ipaddress" "$netmask"
-    contname="cont0percent"
+    cont="cont0percent"
+    cont+="$ipaddress"
+    /home/student/container.sh "$cont" "$ipaddress" "$netmask"
 
 # if the random number is 2, then honeypot type 2 will run. This is the honeypot with 50% of its files being compressed
 elif [ "$randnum" -eq 2 ]
 then
     # runs the container.sh script passing in container name, ip address, and netmask
-    /home/student/container.sh cont50percent "$ipaddress" "$netmask"
-    contname="cont50percent"
+    cont="cont50percent"
+    cont+="$ipaddress"
+    /home/student/container.sh "$cont" "$ipaddress" "$netmask"
 
     # goes through half of the "honey" files in the container, compressing them
     for i in {1..25};
     do
-        sudo lxc-attach -n "$contname" -- gzip /confidential/file"$i".txt
+        sudo lxc-attach -n "$cont" -- gzip /confidential/file"$i".txt
     done
 
 # if the random number is 3, then honeypot type 3 will run. This is the honeypot with 100% of its files being compressed
 else
     # runs the container.sh script passing in container name, ip address, and netmask
-    /home/student/container.sh cont100percent "$ipaddress" "$netmask"
-    contname="cont100percent"
+    cont="cont100percent"
+    cont+="$ipaddress"
+    /home/student/container.sh "$cont" "$ipaddress" "$netmask"
 
     # goes through all of the "honey" files in the container, compressing them
     for i in {1..50};
     do
-        sudo lxc-attach -n "$contname" -- gzip /confidential/file"$i".txt
+        sudo lxc-attach -n "$cont" -- gzip /confidential/file"$i".txt
     done
 fi
 
@@ -197,4 +215,4 @@ max_cont_time_in_secs=$(("$container_run_time"*60))
 container_end_time=$(("$current_time" + "$max_cont_time_in_secs"))
 
 # adding information about the container's end time, name, and respective ip address and netmask to the ip address's tracker file
-echo "$container_end_time" "$contname" "$ipaddress" "$netmask" >> /home/student/tracker"$ipaddress".txt
+echo "$container_end_time" "$cont" "$ipaddress" "$netmask" >> /home/student/tracker"$ipaddress".txt

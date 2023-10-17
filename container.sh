@@ -18,13 +18,17 @@ if sudo lxc-ls | grep -q "$1 "
 then
     # the lines below are used to destroy the container and remove all the firewall rules to do with it
     ip=$(sudo lxc-ls -f | grep "$1 " | cut -d'-' -f2 | awk '{$1=$1};1')
+
+    # MAKE SPECIFIC FOR CONTAINER/IP
     sudo forever stop /home/student/MITM/mitm.js
     sudo iptables --table nat --delete PREROUTING --source 0.0.0.0/0 --destination "$2" --protocol tcp --dport 22 --jump DNAT --to-destination 127.0.0.1:3355
     sudo iptables --table nat --delete PREROUTING --source 0.0.0.0/0 --destination "$2" --jump DNAT --to-destination "$ip"
     sudo iptables --table nat --delete POSTROUTING --source "$ip" --destination 0.0.0.0/0 --jump SNAT --to-source "$2"
     sudo ip addr delete "$2"/"$3" brd + dev eth1
     sudo lxc-stop -n "$1"
+    sleep 5
     sudo lxc-destroy -n "$1"
+    sleep 5
 
 else
     # these lines create the new container as specified as the arguments to this script, set up the appropriate firewall rules, and
@@ -56,23 +60,23 @@ else
 
     # UNCOMMENT BELOW!!!
 
-    while [ "$counter" -le 100 ]
-    do
+    # while [ "$counter" -le 100 ]
+    # do
 
-        # fake username is created
-        username="user""$counter"
+    #     # fake username is created
+    #     username="user""$counter"
 
-        # loops through all of the honey files, adding in the fake username and passwords to each
-        for i in {1..50};
-        do
-          randvalue=$(echo $RANDOM | md5sum | head -c 20; echo;)
-          sudo lxc-attach -n "$1" -- bash -c "echo '$username' '$randvalue' | sudo tee /confidential/file'$i'.txt"
-        done
+    #     # loops through all of the honey files, adding in the fake username and passwords to each
+    #     for i in {1..50};
+    #     do
+    #       randvalue=$(echo $RANDOM | md5sum | head -c 20; echo;)
+    #       sudo lxc-attach -n "$1" -- bash -c "echo '$username' '$randvalue' | sudo tee /confidential/file'$i'.txt"
+    #     done
 
-        # counter is incremented
-        counter=$(( counter + 1 ))
+    #     # counter is incremented
+    #     counter=$(( counter + 1 ))
 
-    done
+    # done
 
     # sets up forever
     sudo sysctl -w net.ipv4.conf.all.route_localnet=1
