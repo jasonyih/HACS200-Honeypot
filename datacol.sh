@@ -27,6 +27,7 @@ done
 if [ ! -f /home/student/mitm_logs/"$1"counter ]
 then
     touch /home/student/mitm_logs/"$1"counter
+    echo "num_commands - time_attacking - average_length" >> /home/student/mitm_logs/"$1"counter
 fi
 
 fileend=$(($fileend- 1))
