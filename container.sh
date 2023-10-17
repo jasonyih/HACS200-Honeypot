@@ -47,36 +47,10 @@ else
     # this line create a honey directory named "confidential" on the container
     sudo lxc-attach -n "$1" -- bash -c "mkdir /confidential"
 
-    # creates 50 honey files within the confidential directory
-    for i in {1..50};
-    do
-        sudo lxc-attach -n "$contname" -- touch /confidential/file"$i".txt
-    done
-
-    # counter variable used to increment from 1 through 100 inclusive
-    counter=1
-
-    # this loop adds 100 lines to each honey file, containing the fake username and fake password
-
-    # UNCOMMENT BELOW!!!
-
-    # while [ "$counter" -le 100 ]
-    # do
-
-    #     # fake username is created
-    #     username="user""$counter"
-
-    #     # loops through all of the honey files, adding in the fake username and passwords to each
-    #     for i in {1..50};
-    #     do
-    #       randvalue=$(echo $RANDOM | md5sum | head -c 20; echo;)
-    #       sudo lxc-attach -n "$1" -- bash -c "echo '$username' '$randvalue' | sudo tee /confidential/file'$i'.txt"
-    #     done
-
-    #     # counter is incremented
-    #     counter=$(( counter + 1 ))
-
-    # done
+        for i in {1..50};
+        do
+          sudo mv /home/student/HoneyFiles/file"$i".txt /var/lib/lxc/$contname/rootfs/confidential/passwords"$i".txt
+        done
 
     # sets up forever
     sudo sysctl -w net.ipv4.conf.all.route_localnet=1
