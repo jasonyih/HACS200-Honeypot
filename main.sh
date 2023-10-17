@@ -65,7 +65,7 @@ then
     if grep -q 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
     then
         # this block does nothing if the attacker has already ssh'd into the container
-        if grep -q 'Attacker closed connection' /home/student/mitm_logs/"$contname".log"$fileend"
+        if grep -q 'Attacker closed the connection' /home/student/mitm_logs/"$contname".log"$fileend"
         then
 
             # removes the tracker document for the ip address
