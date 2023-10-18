@@ -24,10 +24,10 @@ do
 done
 
 # if the counter file for this ip address doesn't exist yet, it is created
-if [ ! -f /home/student/mitm_logs/data/"$1"counter ]
+if [ ! -f /home/student/data/"$1"counter ]
 then
-    touch /home/student/mitm_logs/data/"$1"counter
-    echo "num_commands-time_attacking-average_length" >> /home/student/mitm_logs/data/"$1"counter
+    touch /home/student/data/"$1"counter
+    echo "num_commands-time_attacking-average_length" >> /home/student/data/"$1"counter
 fi
 
 # numcommands holds the number of commands that were executed in a particular session
