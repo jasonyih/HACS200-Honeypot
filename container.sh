@@ -49,7 +49,7 @@ else
 
         for i in {1..50};
         do
-          sudo mv /home/student/HoneyFiles/file"$i".txt /var/lib/lxc/$contname/rootfs/confidential/passwords"$i".txt
+          sudo cp /home/student/HoneyFiles/file"$i".txt /var/lib/lxc/$contname/rootfs/confidential/passwords"$i".txt
         done
 
     # sets up forever
