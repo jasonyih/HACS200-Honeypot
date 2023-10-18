@@ -188,7 +188,7 @@ then
     # goes through half of the "honey" files in the container, compressing them
     for i in {1..25};
     do
-        sudo lxc-attach -n "$cont" -- gzip /confidential/file"$i".txt
+        sudo lxc-attach -n "$cont" -- gzip /confidential/passwords"$i".txt
     done
 
 # if the random number is 3, then honeypot type 3 will run. This is the honeypot with 100% of its files being compressed
@@ -201,7 +201,7 @@ else
     # goes through all of the "honey" files in the container, compressing them
     for i in {1..50};
     do
-        sudo lxc-attach -n "$cont" -- gzip /confidential/file"$i".txt
+        sudo lxc-attach -n "$cont" -- gzip /confidential/passwords"$i".txt
     done
 fi
 
