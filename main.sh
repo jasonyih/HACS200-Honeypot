@@ -31,12 +31,6 @@ then
     mkdir /home/student/mitm_logs
 fi
 
-# creates an mitm logs directory specifically for the specific ip address, if it doesn't exist yet
-if [ ! -d /home/student/mitm_logs/logs_for_"$ipaddress" ]
-then
-    mkdir /home/student/mitm_logs/logs_for_"$ipaddress"
-fi
-
 # considers the case that the tracker document for this ip address already exists,
 # meaning that a container is presently running on the ip address
 if [ -f /home/student/tracker"$ipaddress".txt ]
