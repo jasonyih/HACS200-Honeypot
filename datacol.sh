@@ -34,7 +34,7 @@ fi
 numcommands=$(grep -c 'line from reader' /home/student/mitm_logs/"$1".log"$fileend")
 timestamp_of_attacker_entry=$(grep -m 1 'Opened shell' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
-timestamp_of_attacker_exit=$(grep -m 1 'Attacker closed the connection' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
+timestamp_of_attacker_exit=$(grep -m 1 'Attacker closed connection' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 attacker_exit_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_exit" +%s)
 time_spent_attacking=$(($attacker_exit_in_seconds_after_epoch - $attacker_entry_in_seconds_after_epoch))
 file="/home/student/mitm_logs/$contname.log$fileend"
