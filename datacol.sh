@@ -51,4 +51,4 @@ while IFS= read -r line; do
 done < "$file"
 average_length_of_commands=$(bc -l <<< "$total/$num_lines")
 # Information is added to the end of the respective counter file
-echo "$numcommands-$time_spent_attacking-$average_length_of_commands" >> /home/student/mitm_logs/data/"$1"counter
+echo "$numcommands-$time_spent_attacking-$average_length_of_commands" >> /home/student/data/"$1"counter
