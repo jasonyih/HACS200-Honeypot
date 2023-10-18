@@ -72,10 +72,10 @@ then
             rm /home/student/tracker"$ipaddress".txt
 
             # runs container.sh script to stop the running container on this ip address
-            /home/student/container.sh "$contname" "$extip" "$netmask"
+            /bin/bash /home/student/container.sh "$contname" "$extip" "$netmask"
 
             # runs the data collection script as the container is being recycled
-            /home/student/datacol.sh "$contname"
+            /bin/bash /home/student/datacol.sh "$contname"
 
             exit 0
 
@@ -134,10 +134,10 @@ then
     rm /home/student/tracker"$ipaddress".txt
 
     # runs container.sh script to stop the running container on this ip address
-    /home/student/container.sh "$contname" "$extip" "$netmask"
+    /bin/bash /home/student/container.sh "$contname" "$extip" "$netmask"
 
     # runs the data collection script as the container is being recycled
-    /home/student/datacol.sh "$contname"
+    /bin/bash /home/student/datacol.sh "$contname"
 
     exit 0
 
@@ -148,10 +148,10 @@ then
     rm /home/student/tracker"$ipaddress".txt
 
     # runs container.sh script to stop the running container on this ip address
-    /home/student/container.sh "$contname" "$extip" "$netmask"
+    /bin/bash /home/student/container.sh "$contname" "$extip" "$netmask"
 
     # runs the data collection script as the container is being recycled
-    /home/student/datacol.sh "$contname"
+    /bin/bash /home/student/datacol.sh "$contname"
 
     exit 0
 
@@ -175,7 +175,7 @@ then
     # runs the container.sh script passing in container name, ip address, and netmask
     cont="cont0percent"
     cont+="$ipaddress"
-    /home/student/container.sh "$cont" "$ipaddress" "$netmask"
+    /bin/bash /home/student/container.sh "$cont" "$ipaddress" "$netmask"
 
 # if the random number is 2, then honeypot type 2 will run. This is the honeypot with 50% of its files being compressed
 elif [ "$randnum" -eq 2 ]
@@ -183,7 +183,7 @@ then
     # runs the container.sh script passing in container name, ip address, and netmask
     cont="cont50percent"
     cont+="$ipaddress"
-    /home/student/container.sh "$cont" "$ipaddress" "$netmask"
+    /bin/bash /home/student/container.sh "$cont" "$ipaddress" "$netmask"
 
     # goes through half of the "honey" files in the container, compressing them
     for i in {1..25};
@@ -196,7 +196,7 @@ else
     # runs the container.sh script passing in container name, ip address, and netmask
     cont="cont100percent"
     cont+="$ipaddress"
-    /home/student/container.sh "$cont" "$ipaddress" "$netmask"
+    /bin/bash /home/student/container.sh "$cont" "$ipaddress" "$netmask"
 
     # goes through all of the "honey" files in the container, compressing them
     for i in {1..50};
