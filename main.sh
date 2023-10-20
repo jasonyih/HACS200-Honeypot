@@ -56,7 +56,7 @@ then
     done
 
     # checks to see if attacker has not ssh'd into the honeypot yet
-    if grep -q 'Opened shell' /home/student/mitm_logs/"$contname".log"$fileend"
+    if grep -q 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
     then
         # this block does nothing if the attacker has already ssh'd into the container
         if grep -q 'Attacker closed connection' /home/student/mitm_logs/"$contname".log"$fileend"
@@ -97,7 +97,7 @@ then
     fi
 
     # timestamp of attacker entry
-    timestamp_of_attacker_entry=$(grep -m 1 'Opened shell' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
+    timestamp_of_attacker_entry=$(grep -m 1 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 
     # time of attacker entry, in the form of seconds after epoch
     attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
