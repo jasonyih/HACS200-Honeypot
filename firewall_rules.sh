@@ -6,8 +6,8 @@
 #
 # To enable the firewall, you may need to enable the br_netfilter kernel module
 # by running the following commands:
-modprobe br_netfilter
-sysctl -p /etc/sysctl.conf
+sudo /usr/sbin/modprobe br_netfilter
+sudo /usr/sbin/sysctl -p /etc/sysctl.conf
 #
 
 #pve-firewall restart
@@ -24,7 +24,7 @@ sysctl -p /etc/sysctl.conf
 /sbin/iptables -P FORWARD ACCEPT
 /sbin/iptables -P OUTPUT ACCEPT
 
-sysctl -w net.bridge.bridge-nf-call-iptables=1
+sudo /usr/sbin/sysctl -w net.bridge.bridge-nf-call-iptables=1
 
 ##
 # Firewall Mode
@@ -156,12 +156,12 @@ if [ "$MODE" -eq 2 ]; then
 echo "DEBUG: Firewall MODE 2"
 for i in $hp_tcp;
 do
-	/sbin/iptables -A FORWARD -d $CONTAINER_NETWORK -p tcp --dport $i -m state --state NEW -j ACCEPT
+        /sbin/iptables -A FORWARD -d $CONTAINER_NETWORK -p tcp --dport $i -m state --state NEW -j ACCEPT
 done
 
 for i in $hp_udp;
 do
-	/sbin/iptables -A FORWARD -p udp -d $CONTAINER_NETWORK -m udp --dport $i -j ACCEPT
+        /sbin/iptables -A FORWARD -p udp -d $CONTAINER_NETWORK -m udp --dport $i -j ACCEPT
 done
 
 fi
