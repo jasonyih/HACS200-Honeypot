@@ -56,12 +56,23 @@ then
     done
 
     # checks to see if attacker has not ssh'd into the honeypot yet
-    if grep -q 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend"
+    if grep -q 'Compromising the honeypot' /home/student/mitm_logs/"$contname".log"$fileend"
     then
+
+        attacker_ip=$(grep "Attempts: 2" /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f8 | cut -d',' -f1)
+        att_ip_tables=$(sudo /usr/sbin/iptables -L -n | grep "$attacker_ip")
+        fourthipfield=$(echo "$ipaddress" | cut -d'.' -f4)
+        customport=$(( fourthipfield + 50000 ))
+
+        if [ -z "$att_ip_tables" ]
+        then
+            sudo /usr/sbin/iptables --wait --insert INPUT --source "$attacker_ip" --destination "$ipaddress" --jump ACCEPT
+            sudo /usr/sbin/iptables --wait --insert INPUT ! --source "$attacker_ip" --protocol tcp --dport "$customport" --jump DROP
+        fi
+
         # this block does nothing if the attacker has already ssh'd into the container
         if grep -q 'Attacker closed connection' /home/student/mitm_logs/"$contname".log"$fileend"
         then
-
             # removes the tracker document for the ip address
             rm /home/student/tracker"$ipaddress".txt
 
@@ -97,13 +108,13 @@ then
     fi
 
     # timestamp of attacker entry
-    timestamp_of_attacker_entry=$(grep -m 1 'Attacker connected' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
+    timestamp_of_attacker_entry=$(grep -m 1 'Compromising the honeypot' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 
     # time of attacker entry, in the form of seconds after epoch
     attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
 
     # maximum amount of time container can run in seconds (30 mins = 1800 secs)
-    max_cont_time_in_secs=1800;
+    max_cont_time_in_secs=$(("$container_run_time"*60))
 
     # updating the end time of the container (using seconds after epoch)
     endsecs=$(("$attacker_entry_in_seconds_after_epoch" + "$max_cont_time_in_secs"))
@@ -135,7 +146,7 @@ then
 
     exit 0
 
-    elif [ "$idle_time" -ge 300 ]
+    elif [ "$idle_time" -ge 180 ]
     then
 
     # removes the tracker document for the ip address
