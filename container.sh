@@ -19,16 +19,33 @@ sudo lxc-ls -f > /home/student/temp"$2"
 # checks to see if the container already exists. If so, it is stopped and destroyed. If not, it is created and run
 if grep -q "$1 " /home/student/temp"$2"
 then
+
+    # represent what is currently the most recent log number
+    fileend=1
+
+    # used in while loop to find last log number
+    increment=2
+
+    # loops through log files for the specific container, to find the last one whose number is assigned to fileend
+    while [ -f /home/student/mitm_logs/"$contname".log"$increment" ]
+    do
+        fileend=$(( fileend + 1 ))
+        increment=$(( increment + 1 ))
+    done
+
     # the lines below are used to destroy the container and remove all the firewall rules to do with it
     ip=$(sudo lxc-ls -f | grep "$1 " | cut -d'-' -f2 | awk '{$1=$1};1')
-
+    attacker_ip=$(grep "Attempts: 2" /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f8 | cut -d',' -f1)
     regid=$(sudo forever list | grep "$1".log | cut -d' ' -f6)
 
     sudo forever stop "$regid"
-    sudo /usr/sbin/iptables --table nat --delete PREROUTING --source 0.0.0.0/0 --destination "$2" --protocol tcp --dport 22 --jump DNAT --to-destination 127.0.0.1:"$customport"
-    sudo /usr/sbin/iptables --table nat --delete PREROUTING --source 0.0.0.0/0 --destination "$2" --jump DNAT --to-destination "$ip"
-    sudo /usr/sbin/iptables --table nat --delete POSTROUTING --source "$ip" --destination 0.0.0.0/0 --jump SNAT --to-source "$2"
+    sudo /usr/sbin/iptables --wait --table nat --delete PREROUTING --source 0.0.0.0/0 --destination "$2" --protocol tcp --dport 22 --jump DNAT --to-destination 127.0.0.1:"$customport"
+    sudo /usr/sbin/iptables --wait --table nat --delete PREROUTING --source 0.0.0.0/0 --destination "$2" --jump DNAT --to-destination "$ip"
+    sudo /usr/sbin/iptables --wait --table nat --delete POSTROUTING --source "$ip" --destination 0.0.0.0/0 --jump SNAT --to-source "$2"
     sudo /usr/sbin/ip addr delete "$2"/"$3" brd + dev eth1
+
+    sudo /usr/bin/flock /home/student/zlock1 /usr/sbin/iptables --wait --delete INPUT --source "$attacker_ip" --destination "$2" --jump ACCEPT
+    sudo /usr/bin/flock /home/student/zlock2 /usr/sbin/iptables --wait --delete INPUT ! --source "$attacker_ip" --protocol tcp --dport "$customport" --jump DROP
     sudo lxc-stop -n "$1"
     sleep 5
     sudo lxc-destroy -n "$1"
@@ -52,11 +69,12 @@ else
     sudo ip addr add "$2"/"$3" brd + dev eth1
     sudo ip link set dev eth1 up
     ip=$(sudo lxc-ls -f | grep "$1 " | cut -d'-' -f2 | awk '{$1=$1};1')
-    sudo /usr/sbin/iptables --table nat --insert PREROUTING --source 0.0.0.0/0 --destination "$2" --jump DNAT --to-destination "$ip"
-    sudo /usr/sbin/iptables --table nat --insert POSTROUTING --source "$ip" --destination 0.0.0.0/0 --jump SNAT --to-source "$2"
-    sudo /usr/sbin/iptables --table nat --insert PREROUTING --source 0.0.0.0/0 --destination "$2" --protocol tcp --dport 22 --jump DNAT --to-destination 127.0.0.1:"$customport"
+    sudo /usr/sbin/iptables --wait --table nat --insert PREROUTING --source 0.0.0.0/0 --destination "$2" --jump DNAT --to-destination "$ip"
+    sudo /usr/sbin/iptables --wait --table nat --insert POSTROUTING --source "$ip" --destination 0.0.0.0/0 --jump SNAT --to-source "$2"
+    sudo /usr/sbin/iptables --wait --table nat --insert PREROUTING --source 0.0.0.0/0 --destination "$2" --protocol tcp --dport 22 --jump DNAT --to-destination 127.0.0.1:"$customport"
     sudo lxc-attach -n "$1" -- bash -c "sudo apt-get update && sudo apt-get install -y openssh-server"
-
+    sudo cp /home/student/sshd_config /var/lib/lxc/"$contname"/rootfs/etc/ssh/sshd_config
+    sudo lxc-attach -n "$1" -- bash -c "sudo systemctl restart ssh.service"
     # this line create a honey directory named "confidential" on the container
     sudo lxc-attach -n "$1" -- bash -c "mkdir /confidential"
 
