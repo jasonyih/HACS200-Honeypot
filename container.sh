@@ -97,5 +97,5 @@ else
     done
 
     # sets up the MITM server for this container
-    sudo forever -l /home/student/mitm_logs/"$1".log"$fileend" start /home/student/MITM/mitm.js -n "$1" -i "$ip" -p "$customport" --auto-access --auto-access-fixed 2 --debug
+    sudo forever -l /home/student/mitm_logs/"$1".log"$fileend" start /home/student/MITM/mitm.js -n "$1" -i "$ip" -p "$customport" --auto-access --auto-access-fixed 1 --debug
 fi
