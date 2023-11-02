@@ -44,6 +44,7 @@ time_spent_attacking=$(($attacker_exit_in_seconds_after_epoch - $attacker_entry_
 file="/home/student/mitm_logs/$contname.log$fileend"
 total=0
 num_lines=0
+mode=""
 while IFS= read -r line; do
     # Check if the line is a line where the attacker wrote commands
     if echo "$line" | grep -q "line from reader"; then
@@ -51,12 +52,14 @@ while IFS= read -r line; do
         # one is subtracted because the lines start with a whitespace character
         total=$(($total + ${#num_chars} - 1))
         num_lines=$(($num_lines + 1))
+        mode="interactive"
     fi
 
     if echo "$line" | grep -q "Noninteractive mode attacker command:"; then
       num_chars=$(echo $line | cut -d':' -f4-)
       total=$(($total + ${#num_chars} - 1))
       num_lines=$(($num_lines + 1))
+      mode="Noninteractive"
     fi
 done < "$file"
 average_length_of_commands=$(/usr/bin/bc -l <<< "$total/$num_lines")
@@ -68,4 +71,4 @@ then
   average_length_of_commands=0
 fi
 
-echo "$total_commands-$time_spent_attacking-$average_length_of_commands-$attacker_ip-$filep" >> /home/student/data/"$1"counter.txt
+echo "$total_commands-$time_spent_attacking-$average_length_of_commands-$attacker_ip-$filep-$mode" >> /home/student/data/"$1"counter.txt
