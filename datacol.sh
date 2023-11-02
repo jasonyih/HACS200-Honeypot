@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# This is the preliminary data collection script which extracts the dependent variables
-# we are measuring from the respective MITM logs. As of now, it is just measuring
-# the number of lines executed by attackers
+# Data collection script - runs each time a container is recycled.
 
 # checks to see if the number of arguments is 1
 if [ $# -ne 1 ]
