@@ -35,7 +35,7 @@ fi
 num_interative=$(grep -c 'Noninteractive mode attacker command' /home/student/mitm_logs/"$1".log"$fileend")
 numcommands=$(grep -c 'line from reader' /home/student/mitm_logs/"$1".log"$fileend")
 total_commands=$(( $numcommands + $num_interative))
-attacker_ip=$(grep "Attempts: 2" /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f8 | cut -d',' -f1)
+attacker_ip=$(grep "Attempts: 1" /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f8 | cut -d',' -f1)
 timestamp_of_attacker_entry=$(grep -m 1 'Compromising the honeypot' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
 attacker_entry_in_seconds_after_epoch=$(date -d "$timestamp_of_attacker_entry" +%s)
 timestamp_of_attacker_exit=$(grep -m 1 'Attacker closed connection' /home/student/mitm_logs/"$contname".log"$fileend" | cut -d' ' -f1-2)
